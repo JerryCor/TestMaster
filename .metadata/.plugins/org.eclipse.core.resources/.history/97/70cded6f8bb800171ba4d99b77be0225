@@ -1,0 +1,5 @@
+package com.xjzhu.service;
+
+public interface UserService {
+
+}

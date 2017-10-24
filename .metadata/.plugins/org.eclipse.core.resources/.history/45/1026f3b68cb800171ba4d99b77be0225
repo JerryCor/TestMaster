@@ -1,0 +1,14 @@
+package com.xjzhu.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.xjzhu.service.UserService;
+
+@Controller
+@RequestMapping("/demo")
+public class UserController {
+	@Autowired
+	private UserService userService;
+}

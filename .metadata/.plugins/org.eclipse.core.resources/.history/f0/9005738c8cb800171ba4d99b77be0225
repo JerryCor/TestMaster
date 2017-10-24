@@ -1,0 +1,35 @@
+package com.xjzhu.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xjzhu.dao.UserDao;
+import com.xjzhu.entity.User;
+import com.xjzhu.service.UserService;
+
+public class UserServiceImpl implements UserService {
+	@Autowired
+	private UserDao userDao;
+
+	@Override
+	public void delete(User user) {
+		userDao.delete(user);
+	}
+
+	@Override
+	public void addOrUpdate(User user) {
+		userDao.save(user);
+	}
+
+	@Override
+	public List<User> getUserList() {
+		List<User> userList = (List<User>) userDao.findAll();
+		if(userList!=null){
+			return userList;
+		}
+		return null;
+	}
+
+}

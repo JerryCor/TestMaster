@@ -1,0 +1,27 @@
+package com.xjzhu.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.xjzhu.dao.UserDao;
+import com.xjzhu.entity.User;
+import com.xjzhu.service.UserService;
+
+public class UserServiceImpl implements UserService {
+	@Autowired
+	private UserDao userDao;
+
+
+	@Override
+	public void delete(User user) {
+		// TODO Auto-generated method stub
+
+	}
+
+
+	@Override
+	public void addOrUpdate(User user) {
+		// TODO Auto-generated method stub
+		
+	}
+
+}

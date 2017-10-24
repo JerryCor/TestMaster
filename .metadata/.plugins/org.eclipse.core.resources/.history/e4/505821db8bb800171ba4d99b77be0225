@@ -1,0 +1,9 @@
+package com.xjzhu.service;
+
+import com.xjzhu.entity.User;
+
+public interface UserService {
+	void save(User user);
+	void update(User user);
+	void delete(User user);
+}

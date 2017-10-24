@@ -1,0 +1,5 @@
+package com.xjzhu.entity;
+
+public class User {
+
+}
