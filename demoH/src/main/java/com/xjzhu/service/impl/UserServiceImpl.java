@@ -33,4 +33,13 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 
+	@Override
+	public User getUser(Integer uId) {
+		User user =userDao.findOne(uId);
+		if(user!=null){
+			return user;
+		}
+		return null;
+	}
+
 }

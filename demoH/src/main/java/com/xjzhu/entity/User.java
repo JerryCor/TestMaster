@@ -1,5 +1,7 @@
 package com.xjzhu.entity;
 
+import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +21,14 @@ public class User {
 	
 	@Column(name="u_introduce")
 	private String uIntroduce;
+	
+	@Column(name="update_date")
+	private Date updateDate;
+	
+	@Column(name="create_date")
+	private Date createDate;
+	
+	
 	
 	public User(){
 		super();
@@ -43,6 +53,18 @@ public class User {
 	}
 	public void setuIntroduce(String uIntroduce) {
 		this.uIntroduce = uIntroduce;
+	}
+	public Date getUpdateDate() {
+		return updateDate;
+	}
+	public void setUpdateDate(Date updateDate) {
+		this.updateDate = updateDate;
+	}
+	public Date getCreateDate() {
+		return createDate;
+	}
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
 	}
 	
 }

@@ -8,7 +8,8 @@ import com.xjzhu.entity.User;
 
 @Service
 public interface UserService {
-	List<User> getUserList();
 	void addOrUpdate(User user);
 	void delete(User user);
+	User getUser(Integer uId);
+	List<User> getUserList();
 }

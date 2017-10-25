@@ -11,31 +11,83 @@
 <body>
 	<script>
 		$(function() {
-
-			$("#submit").click(function(){
+			var flag = false;
+			$("#submit").click(function() {
 				$("#userInfo").submit();
 			});
-			
-			$("#userName").blur(function(){
-				var text =$.trim($("#userName").val());
-				if(text === ''){
+			$("#deleteSubmit").click(function() {
+				$("#userInfo").attr("action",'deleteUser');
+				$("#userInfo").submit();
+			});
+
+			$("#userName").blur(function() {
+				var text = $.trim($("#userName").val());
+				if (text === '') {
 					$("#uName").addClass("has-error");
 					$("#uName").removeClass("has-success");
-				}else{
+				} else {
 					$("#uName").addClass("has-success");
 					$("#uName").removeClass("has-error");
 				}
 			});
-			
+
+			/* $('#myModal').on('show.bs.modal', function(event) {
+				var button = $(event.relatedTarget) // 触发事件的按钮  
+				var recipient = button.data('whatever') // 解析出whatever内容  
+				alert(recipient);
+				var modal = $(this) //获得模态框本身
+				modal.find('.modal-title').text('Message To ' + recipient)
+			}) */
+
 		});
-		function emptyCheck(obj){
-			var text =$.trim($(obj).val());
-			if(text === ''){
+		function emptyCheck(obj) {
+			var text = $.trim($(obj).val());
+			if (text === '') {
 				$(obj).addClass("has-error");
-			}else{
+			} else {
 				$(obj).addClass("has-success");
 			}
 		};
+		function updateUser(obj, flag) {
+			var uId = $(obj).attr("selectedIndex");
+			$.ajax({
+				type : "GET",
+				url : "getUser?uId="+uId,
+				success : function(event) {
+					console.log(event);
+					$("#userId").prop("value", event.uId);
+					$("#userName").prop("value", event.uName);
+					$("#userIntroduce").prop("value", event.uIntroduce);
+					$("#createDate").prop("value", "2017-10-25 17:15:46");
+					$("#updateDate").prop("value", event.updateDate);
+					if(flag == 'up'){
+						updateStyle();
+					}else{
+						$("#userId").prop("readOnly", true);
+						$("#userName").prop("readOnly", true);
+						$("#userIntroduce").prop("readOnly", true);
+						$("#update").css("display", "none");
+						$("#delete").css("display", "block");
+					}
+					$("#myModal").modal("show");
+				},
+				dataType : "JSON"
+			});
+		};
+		function addUser() {
+			$("#userId").prop("value", null);
+			$("#userName").prop("value", null);
+			$("#userIntroduce").prop("value", null);
+			updateStyle();
+			$("#myModal").modal("show");
+		};
+		function updateStyle(){
+			$("#userId").prop("readOnly", false);
+			$("#userName").prop("readOnly", false);
+			$("#userIntroduce").prop("readOnly", false);
+			$("#update").css("display", "block");
+			$("#delete").css("display", "none");
+		}
 	</script>
 	<div class="container">
 		<h2 class="bg-primary">Peolpe Manage</h2>
@@ -49,19 +101,20 @@
 				</tr>
 			</thead>
 			<tbody>
-				<tr th:each="users : ${users}">
-					<td th:text="${users.uId}"></td>
-					<td th:text="${users.uName}"></td>
-					<td th:text="${users.uIntroduce}"></td>
-					<td><a href="#">Edit</a></td>
+				<tr th:each="user,userStat : ${users}">
+					<td th:text="${userStat.index+1}"></td>
+					<td th:text="${user.uName}"></td>
+					<td th:text="${user.uIntroduce}"></td>
+					<td><a onclick="updateUser(this, 'up');" th:attr="selectedIndex=${user.uId}">Edit</a>
+					<a onclick="updateUser(this, 'del');" th:attr="selectedIndex=${user.uId}">Delete</a></td>
 				</tr>
 			</tbody>
 			<tfoot>
 			</tfoot>
 		</table>
 		<div class="row">
-			<div class="col-lg-offset-9">
-				<button id="add" type="button" data-toggle="modal" data-target="#myModal" class="btn btn-default">Add</button>
+			<div class="col-lg-offset-11">
+				<button id="add" onclick="addUser();" type="button" class="btn btn-default" >Add</button>
 			</div>
 		</div>
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
@@ -71,24 +124,37 @@
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal"
 							aria-hidden="true">&times;</button>
-						<h4 class="modal-title" id="myModalLabel">人员添加</h4>
+						<h4 class="modal-title" id="myModalLabel">People Manage</h4>
 					</div>
 					<div class="modal-body">
-						<form id="userInfo" action="#" th:action="@{addUser}" th:object="${user}"
-									method="post">
-									<div id="uName" class="form-group">
-											<label for="userName">name</label>
-											<input id="userName" class="form-control" type="text" th:field="*{uName}" onblur="return emptyCheck(this)" />
-									</div>
-									<div class="form-group">
-											<label for="userIntroduce">introduce</label>
-											<input id="userIntroduce" class="form-control" type="text" th:field="*{uIntroduce}" />
-									</div>
-								</form>
+						<form id="userInfo" action="#" th:action="@{addUser}"
+							th:object="${user}" method="post">
+							<input id="userId" class="form-control" type="hidden"
+								th:field="*{uId}" th:value="*{uId}" />
+								<input  class="form-control" type="hidden"
+								th:field="*{createDate}"/>
+								<input  class="form-control" type="hidden"
+								th:field="*{updateDate}" />
+							<div id="uName" class="form-group">
+								<label for="userName">name</label> <input id="userName"
+									class="form-control" type="text" th:field="*{uName}"
+									 onblur="return emptyCheck(this)" />
+							</div>
+							<div class="form-group">
+								<label for="userIntroduce">introduce</label> <input
+									id="userIntroduce" class="form-control" type="text"
+									th:field="*{uIntroduce}" />
+							</div>
+						</form>
+						<span th:text="${user.uName}"></span>
 					</div>
-					<div class="modal-footer">
+					<div id="update" class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
 						<button id="submit" type="button" class="btn btn-primary">Submit</button>
+					</div>
+					<div id="delete" style="display:none;" class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button id="deleteSubmit" type="button" class="btn btn-primary">delete</button>
 					</div>
 				</div>
 				<!-- /.modal-content -->
