@@ -1,12 +1,18 @@
 package com.xjzhu.controller;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,41 +28,47 @@ import com.xjzhu.service.UserService;
 public class UserController {
 	@Autowired
 	private UserService userService;
-	
-	
+
 	@RequestMapping("/index")
-	public String index(Model model){
+	public String index(Model model) {
 		List<User> userList = userService.getUserList();
-		if(userList!= null){
+		if (userList != null) {
 			model.addAttribute("users", userList);
 			model.addAttribute("user", new User());
 			model.addAttribute("asd", "123");
 		}
 		return "index";
 	}
-	
-	@RequestMapping(value="/addUser", method= RequestMethod.POST)
-	public String addUser(Model model, User user){
-		if(user.getuId()!= null){
-			user.setCreateDate(userService.getUser(user.getuId()).getCreateDate());
+
+	@RequestMapping(value = "/addUser", method = RequestMethod.POST)
+	public String addUser(Model model, User user) {
+		if (user.getuId() != null) {
+			//user.setCreateDate(userService.getUser(user.getuId()).getCreateDate());
 			user.setUpdateDate(new Date());
 		}
 		userService.addOrUpdate(user);
 		return "redirect:index";
 	}
-	
-	@RequestMapping(value="/deleteUser", method= RequestMethod.POST)
-	public String deleteUser(Model model, User user){
+
+	@RequestMapping(value = "/deleteUser", method = RequestMethod.POST)
+	public String deleteUser(Model model, User user) {
 		userService.delete(user);
 		return "redirect:index";
 	}
-	
-	@RequestMapping(value="/getUser", method= RequestMethod.GET)
+
+	@RequestMapping(value = "/getUser", method = RequestMethod.GET)
 	@ResponseBody
-	public String getUser(Model model, @RequestParam("uId") Integer uId, User user) throws JsonProcessingException{
+	public String getUser(Model model, @RequestParam("uId") Integer uId, User user) throws JsonProcessingException {
 		user = userService.getUser(uId);
 		ObjectMapper mapper = new ObjectMapper();
 		String json = mapper.writeValueAsString(user);
 		return json;
+	}
+
+	@InitBinder
+	protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		dateFormat.setLenient(false);
+		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
 	}
 }
