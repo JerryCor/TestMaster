@@ -1,5 +1,6 @@
 package com.xjzhu.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -8,10 +9,17 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 @Entity
 @Table(name="user")
-public class User {
+public class User implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id
 	@GeneratedValue
 	private Integer uId;
@@ -23,9 +31,11 @@ public class User {
 	private String uIntroduce;
 	
 	@Column(name="update_date")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8") 
 	private Date updateDate;
 	
 	@Column(name="create_date")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")  
 	private Date createDate;
 	
 	

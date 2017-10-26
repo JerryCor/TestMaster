@@ -1,18 +1,17 @@
 package com.xjzhu.controller;
 
-import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.ServletRequestDataBinder;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,11 +30,12 @@ public class UserController {
 
 	@RequestMapping("/index")
 	public String index(Model model) {
-		List<User> userList = userService.getUserList();
+		Page<User> userList = userService.getUserByPage(0, 5);
 		if (userList != null) {
-			model.addAttribute("users", userList);
+			model.addAttribute("users", userList.getContent());
 			model.addAttribute("user", new User());
-			model.addAttribute("asd", "123");
+			model.addAttribute("pageTotal", userList.getTotalPages());
+			model.addAttribute("currentPage", Integer.valueOf(1));
 		}
 		return "index";
 	}
@@ -45,6 +45,8 @@ public class UserController {
 		if (user.getuId() != null) {
 			//user.setCreateDate(userService.getUser(user.getuId()).getCreateDate());
 			user.setUpdateDate(new Date());
+		}else{
+			user.setCreateDate(new Date());
 		}
 		userService.addOrUpdate(user);
 		return "redirect:index";
@@ -64,11 +66,27 @@ public class UserController {
 		String json = mapper.writeValueAsString(user);
 		return json;
 	}
-
-	@InitBinder
-	protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		dateFormat.setLenient(false);
-		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+	
+	@RequestMapping("/showPage/{currentPage}")
+	public String showPage(Model model, @PathVariable int currentPage) throws JsonProcessingException {
+		/*Page<User> userList = userService.getUserByPage(0, 5);
+		ObjectMapper mapper = new ObjectMapper();
+		String json = mapper.writeValueAsString(userList);*/
+		Page<User> userList = userService.getUserByPage(currentPage-1, 5);
+		if (userList != null) {
+			model.addAttribute("users", userList.getContent());
+			model.addAttribute("user", new User());
+			model.addAttribute("pageTotal", userList.getTotalPages());
+			model.addAttribute("currentPage", currentPage);
+		}
+		return "index";
 	}
+	
+	@InitBinder   
+    public void initBinder(WebDataBinder binder) {   
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   
+        dateFormat.setLenient(true);   
+        binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));   
+    } 
+
 }

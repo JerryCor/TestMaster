@@ -6,7 +6,7 @@
 <script th:src="@{/jquery/jquery-3.2.1.min.js}" type="text/javascript"></script>
 <script th:src="@{/bootstrap/js/bootstrap.min.js}"
 	type="text/javascript"></script>
-<title>Hello SBTL</title>
+<title>People Manage</title>
 </head>
 <body>
 	<script>
@@ -52,13 +52,13 @@
 			var uId = $(obj).attr("selectedIndex");
 			$.ajax({
 				type : "GET",
-				url : "getUser?uId="+uId,
+				url : "/demo/getUser?uId="+uId,
 				success : function(event) {
 					console.log(event);
 					$("#userId").prop("value", event.uId);
 					$("#userName").prop("value", event.uName);
 					$("#userIntroduce").prop("value", event.uIntroduce);
-					$("#createDate").prop("value", "2017-10-25 17:15:46");
+					$("#createDate").prop("value", event.createDate);
 					$("#updateDate").prop("value", event.updateDate);
 					if(flag == 'up'){
 						updateStyle();
@@ -78,6 +78,8 @@
 			$("#userId").prop("value", null);
 			$("#userName").prop("value", null);
 			$("#userIntroduce").prop("value", null);
+			$("#createDate").prop("value", null);
+			$("#updateDate").prop("value", null);
 			updateStyle();
 			$("#myModal").modal("show");
 		};
@@ -88,28 +90,47 @@
 			$("#update").css("display", "block");
 			$("#delete").css("display", "none");
 		}
+		function pageShow(flag){
+			var currentPage = $("#currentPage").html();
+			currentPage =  parseInt(currentPage);
+			if(flag == 'pre'){
+				currentPage = currentPage -1;
+			}else if(flag == 'next'){
+				currentPage = currentPage +1;
+			}
+			window.location.href="/demo/showPage/"+currentPage;
+			
+		}
 	</script>
 	<div class="container">
-		<h2 class="bg-primary">Peolpe Manage</h2>
-		<table class="table table-hover table-condensed">
+		<h1 class="bg-primary">People Manage</h1>
+		<table class="table table-striped">
 			<thead>
 				<tr>
 					<th>id</th>
 					<th>name</th>
-					<th>age</th>
+					<th>introduce</th>
 					<th>option</th>
 				</tr>
 			</thead>
-			<tbody>
+			<tbody id="showInfo">
 				<tr th:each="user,userStat : ${users}">
 					<td th:text="${userStat.index+1}"></td>
 					<td th:text="${user.uName}"></td>
 					<td th:text="${user.uIntroduce}"></td>
-					<td><a onclick="updateUser(this, 'up');" th:attr="selectedIndex=${user.uId}">Edit</a>
-					<a onclick="updateUser(this, 'del');" th:attr="selectedIndex=${user.uId}">Delete</a></td>
+					<td><button onclick="updateUser(this, 'up');" class="btn btn-link" th:attr="selectedIndex=${user.uId}">Edit</button>
+					<button onclick="updateUser(this, 'del');" class="btn btn-link" th:attr="selectedIndex=${user.uId}">Delete</button></td>
 				</tr>
 			</tbody>
 			<tfoot>
+				<tr>
+					<td colspan="2"><label>当前</label><span id="currentPage" th:text="${currentPage}">0</span><label>页</label>
+					<label>总共</label><span th:text="${pageTotal}">0</span><label>页</label></td>
+					<td colspan="2" align="right"><button id="prepage" onclick="pageShow('pre')" type="button" class="btn btn-link" >上一页</button>
+					<button id="nextpage" onclick="pageShow('next')" type="button" class="btn btn-link" >下一页</button>
+					
+					</td>
+				</tr>
 			</tfoot>
 		</table>
 		<div class="row">
@@ -127,14 +148,14 @@
 						<h4 class="modal-title" id="myModalLabel">People Manage</h4>
 					</div>
 					<div class="modal-body">
-						<form id="userInfo" action="#" th:action="@{addUser}"
+						<form id="userInfo" action="#" th:action="@{/demo/addUser}"
 							th:object="${user}" method="post">
 							<input id="userId" class="form-control" type="hidden"
 								th:field="*{uId}" th:value="*{uId}" />
 								<input  class="form-control" type="hidden"
-								th:field="*{createDate}"/>
-								<input  class="form-control" type="hidden"
 								th:field="*{updateDate}" />
+								<input  class="form-control" type="hidden"
+								th:field="*{createDate}"/>
 							<div id="uName" class="form-group">
 								<label for="userName">name</label> <input id="userName"
 									class="form-control" type="text" th:field="*{uName}"
