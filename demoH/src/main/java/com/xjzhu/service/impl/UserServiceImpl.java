@@ -1,19 +1,12 @@
 package com.xjzhu.service.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 
 import com.xjzhu.dao.UserDao;
 import com.xjzhu.entity.User;
@@ -58,12 +51,16 @@ public class UserServiceImpl implements UserService {
 		Page<User> users =userDao.findAll(pages);
 		return users;
 	}
-	
-	@InitBinder
-	protected void init(HttpServletRequest request, ServletRequestDataBinder binder) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		dateFormat.setLenient(false);
-		binder.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat, true));
+
+	@Override
+	public void deleteById(Integer uId) {
+		userDao.delete(uId);
 	}
 
+	@Override
+	public void deleteByIds(List<Integer> uIds) {
+		for(Integer id : uIds){
+			userDao.delete(id);
+		}	
+	}
 }

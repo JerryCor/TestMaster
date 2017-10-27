@@ -1,7 +1,9 @@
 package com.xjzhu.controller;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -31,10 +33,15 @@ public class UserController1 {
 	private UserService userService;
 
 	@RequestMapping(value="/index", method = RequestMethod.GET)
-	public String index(Model model) {
+	public String index(Model model, @RequestParam(value="model", required=false) Integer modelfalg) {
 		List<User> userList = userService.getUserList();
 		if (userList != null) {
 			model.addAttribute("users", userList);
+		}
+		if(modelfalg ==null ){
+			model.addAttribute("model", 0);
+		}else{
+			model.addAttribute("model", modelfalg);
 		}
 		model.addAttribute("user", new User());
 		return "indexbootstraptable";
@@ -72,11 +79,24 @@ public class UserController1 {
 	}
 
 	@RequestMapping(value = "/deleteUser", method = RequestMethod.POST)
-	public String deleteUser(Model model, User user) {
-		userService.delete(user);
-		return "redirect:indexbootstraptable";
+	@ResponseBody
+	public String deleteUser(Model model, @RequestParam("uIds") String uIds) throws IOException {
+		//userService.deleteById(uId);;
+		uIds = uIds.replace("[", "");
+		uIds = uIds.replace("]", "");
+		String[] ids = uIds.split(",");
+		List<Integer> idList = new ArrayList<Integer>();
+		for(String id : ids){
+			idList.add(new Integer(id));
+		}
+		userService.deleteByIds(idList);
+		ObjectMapper mapper = new ObjectMapper();
+		Map<String,Object> maps = new HashMap<String, Object>();
+		maps.put("success", true);
+		String json = mapper.writeValueAsString(maps);
+		return json;
 	}
-
+	
 	
 	@InitBinder   
     public void initBinder(WebDataBinder binder) {   

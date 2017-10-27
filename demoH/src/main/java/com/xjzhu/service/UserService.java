@@ -11,6 +11,8 @@ import com.xjzhu.entity.User;
 public interface UserService {
 	void addOrUpdate(User user);
 	void delete(User user);
+	void deleteById(Integer uId);
+	void deleteByIds(List<Integer> uIds);
 	User getUser(Integer uId);
 	List<User> getUserList();
 	Page<User> getUserByPage(Integer page, Integer size);

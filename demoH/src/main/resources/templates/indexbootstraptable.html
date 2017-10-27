@@ -2,51 +2,53 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8" />
+<link th:href="@{/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
 <link th:href="@{/easyui/themes/default/easyui.css}" rel="stylesheet" />
 <link th:href="@{/easyui/themes/icon.css}" rel="stylesheet" />
 <script th:src="@{/jquery/jquery-3.2.1.min.js}" type="text/javascript"></script>
 <script th:src="@{/easyui/jquery.easyui.min.js}" type="text/javascript"></script>
 <script th:src="@{/easyui/easyui-lang-zh_CN.js}" type="text/javascript"></script>
 <style type="text/css">
-	#fm {
-		margin: 0;
-		padding: 10px 30px;
-	}
-	
-	.ftitle {
-		font-size: 14px;
-		font-weight: bold;
-		color: #666;
-		padding: 5px 0;
-		margin-bottom: 10px;
-		border-bottom: 1px solid #ccc;
-	}
-	
-	.fitem {
-		margin-bottom: 5px;
-	}
-	
-	.fitem label {
-		display: inline-block;
-		width: 80px;
-	}
+#fm {
+	margin: 0;
+	padding: 10px 30px;
+}
+
+.ftitle {
+	font-size: 14px;
+	font-weight: bold;
+	color: #666;
+	padding: 5px 0;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+.fitem {
+	margin-bottom: 5px;
+}
+
+.fitem label {
+	display: inline-block;
+	width: 80px;
+}
 </style>
 <title>People Manage</title>
 </head>
 <body>
 
-	<script>
+	<script th:inline="javascript">
 		$(function() {
 			$('#tt').datagrid({
-				width : 960,
-				height : 336,
+				height : 340,
 				title : '人员管理',
 				url : '/demo1/index',
 				method : 'POST',
+				idField : 'uId',
 				toolbar : '#toolbar',
-				striped : true,
+				remoteSort : false,
+				striped : false,
 				fitColumns : true,
-				singleSelect : false,
+				singleSelect : true,
 				rownumbers : true,
 				pagination : true,
 				nowrap : false,
@@ -65,81 +67,159 @@
 
 				}
 			});
-			
+
 		});
-		function newUser(){
-			$('#dlg').dialog('open').dialog('setTitle','人员新增');
+
+		function newUser() {
+			$('#dlg').dialog('open').dialog('setTitle', '人员新增');
 			$('#fm').form('clear');
-			url = '/demo/addUser';
+			url = '/demo1/addUser';
 		}
-		
-		function saveUser(){
-			$('#fm').form('submit',{
-				url: '/demo1/addUser',
-				onSubmit: function(){
+
+		function editUser() {
+			var row = $('#tt').datagrid('getSelected');
+			var row1 = $('#tt').datagrid('getSelections');
+			if (row1.length == 0 || row1.length > 1) {
+				$.messager.show({ // show error message
+					title : 'Error',
+					msg : '编剧的数据选中为0或大于2'
+				});
+				return false;
+			}
+			console.log(row);
+			if (row) {
+				$('#dlg').dialog('open').dialog('setTitle', 'Edit User');
+				console.log(row);
+				$('#fm').form('load', row);
+				url = '/demo1/addUser';
+			}
+		}
+
+		function saveUser() {
+			$('#fm').form('submit', {
+				url : '/demo1/addUser',
+				onSubmit : function() {
 					return $(this).form('validate');
 				},
-				success: function(result){
+				success : function(result) {
 					var result = JSON.parse(result);
-					if (result.errorMsg){
+					if (result.errorMsg) {
 						$.messager.show({
-							title: 'Error',
-							msg: result.errorMsg
+							title : 'Error',
+							msg : result.errorMsg
 						});
 					} else {
-						$('#dlg').dialog('close');		// close the dialog
-						$('#tt').datagrid('reload');	// reload the user data
+						$('#dlg').dialog('close'); // close the dialog
+						$('#tt').datagrid('reload'); // reload the user data
 					}
 				}
 			});
 		}
+
+		function removeUser() {
+			var row = $('#tt').datagrid('getSelections');
+			console.log(row);
+			if (row.length == 0) {
+				$.messager.show({ // show error message
+					title : 'Error',
+					msg : '至少选择一条数据'
+				});
+				return false;
+			}
+			var ids = new Array();
+			for ( var o in row) {
+				ids.push(row[o].uId);
+			}
+			console.log(ids);
+			if (row) {
+				$.messager.confirm('Confirm', '你确定要移除该人员？', function(r) {
+					if (r) {
+						$.post('/demo1/deleteUser', {
+							uIds : JSON.stringify(ids)
+						}, function(result) {
+							console.log(result);
+							if (result.success) {
+								$('#tt').datagrid('clearSelections');
+								$('#tt').datagrid('reload'); // reload the user data
+							} else {
+								$.messager.show({ // show error message
+									title : 'Error',
+									msg : result.msg
+								});
+							}
+						}, 'json');
+					}
+				});
+			}
+		}
 	</script>
 	<div class="container">
-		<!-- <h1 class="bg-primary">XXXX</h1> -->
-		<table id="tt" class="easyui-datagrid">
-			<thead>
-				<tr>
-					<th data-options="field:'uId',width:150">人员编号</th>
-					<th data-options="field:'uName',width:270">人员姓名</th>
-					<th data-options="field:'uIntroduce',width:300">个人介绍</th>
-				</tr>
-			</thead>
-		</table>
-		<div id="toolbar">
-			<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true"
-				onclick="newUser()">人員新增</a> <a href="#"
-				class="easyui-linkbutton" iconCls="icon-edit" plain="true"
-				onclick="editUser()">信息修改</a> <a href="#"
-				class="easyui-linkbutton" iconCls="icon-remove" plain="true"
-				onclick="destroyUser()">人員移除</a>
+		<div class="page-header">
+			<h1>
+				Welcome XXX syetem <small>Hello World!</small>
+			</h1>
 		</div>
+		<div style="width: 20%; height: 500px; float: left">
+			<ul class="nav nav-pills nav-stacked">
+				<li role="presentation" class="active"><a href="/demo1/index?model=0">Home</a></li>
+				<li role="presentation"><a href="/demo1/index?model=1">Options for employee</a></li>
+				<li role="presentation"><a href="#">Messages1</a></li>
+				<li role="presentation"><a href="#">Messages2</a></li>
+				<li role="presentation"><a href="#">Messages3</a></li>
+			</ul>
+		</div>
+		<div th:if="${model == 1}"
+			style="width: 80%; height: 500px; float: right">
+			<!-- <h1 class="bg-primary">XXXX</h1> -->
+			<table id="tt" class="easyui-datagrid">
+				<thead>
+					<tr>
+						<th field="ck" checkbox="true"></th>
+						<th data-options="field:'uId',width:150,sortable:true">人员编号</th>
+						<th data-options="field:'uName',width:270,sortable:true">人员姓名</th>
+						<th data-options="field:'uIntroduce',width:300">个人介绍</th>
+					</tr>
+				</thead>
+			</table>
+			<div id="toolbar">
+				<a href="#" class="easyui-linkbutton" iconCls="icon-add"
+					plain="true" onclick="newUser()">人員新增</a> <a href="#"
+					class="easyui-linkbutton" iconCls="icon-edit" plain="true"
+					onclick="editUser()">信息修改</a> <a href="#" class="easyui-linkbutton"
+					iconCls="icon-remove" plain="true" onclick="removeUser()">人員移除</a>
+			</div>
 
-		<div id="dlg" class="easyui-dialog"
-			style="width: 400px; height: 280px; padding: 10px 20px" closed="true"
-			buttons="#dlg-buttons">
-			<div class="ftitle">人員信息</div>
-			<form id="fm" th:object="${user}" method="post">
-				<div class="fitem">
-					<label>人員姓名:</label> <input th:field="*{uName}"
-						class="easyui-validatebox" required="true" />
-				</div>
-				<div class="fitem">
-					<label>個人介紹:</label> <input th:field="*{uIntroduce}"
-						class="easyui-validatebox" required="true" />
-				</div>
-				<!-- <div class="fitem">
+			<div id="dlg" class="easyui-dialog"
+				style="width: 400px; height: 280px; padding: 10px 20px"
+				closed="true" buttons="#dlg-buttons">
+				<div class="ftitle">人員信息</div>
+				<form id="fm" th:object="${user}" method="post">
+					<div class="fitem">
+						<label>人員姓名:</label> <input th:field="*{uName}"
+							class="easyui-validatebox" required="true" />
+					</div>
+					<div class="fitem">
+						<label>個人介紹:</label> <input th:field="*{uIntroduce}"
+							class="easyui-validatebox" required="true" />
+					</div>
+					<input th:field="*{uId}" type="hidden" /> <input
+						th:field="*{createDate}" type="hidden" /> <input
+						th:field="*{updateDate}" type="hidden" />
+					<!-- <div class="fitem">
 					<label>Phone:</label> <input name="phone" />
 				</div>
 				<div class="fitem">
 					<label>Email:</label> <input name="email"
 						class="easyui-validatebox" validType="email" />
 				</div> -->
-			</form>
-		</div>
-		<div id="dlg-buttons">
-			<a href="#" class="easyui-linkbutton" iconCls="icon-ok"
-				onclick="saveUser()">Save</a> <a href="#" class="easyui-linkbutton"
-				iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
+				</form>
+			</div>
+			<div id="dlg-buttons">
+				<a href="#" class="easyui-linkbutton" iconCls="icon-ok"
+					onclick="saveUser()">Save</a> <a href="#" class="easyui-linkbutton"
+					iconCls="icon-cancel"
+					onclick="javascript:$('#dlg').dialog('close')">Cancel</a>
+			</div>
 		</div>
 	</div>
 </body>
